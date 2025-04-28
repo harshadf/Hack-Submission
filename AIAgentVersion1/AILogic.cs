@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace AgentWorkshop.Client;
 
-public abstract class Lab(AIProjectClient client, string modelName) : IAsyncDisposable
+public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposable
 {
     protected AIProjectClient Client { get; } = client;
     protected string ModelName { get; } = modelName;
@@ -154,8 +154,7 @@ public abstract class Lab(AIProjectClient client, string modelName) : IAsyncDisp
         };
     }
 
-    protected virtual Task<string> CreateInstructionsAsync()
-        
+    protected virtual Task<string> CreateInstructionsAsync()        
     {
         string instructionsFile = Path.Combine("C:\\Users\\D&D\\source\\repos\\ConsoleApp1\\ConsoleApp1\\instructions\\", "file_cv_search.txt");
 
