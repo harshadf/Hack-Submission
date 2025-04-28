@@ -12,6 +12,9 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.15" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0-preview.3.25171.6" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	<None Include="file_cv_search.txt">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
   </ItemGroup>
 
   <ItemGroup>

@@ -156,7 +156,7 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
 
     protected virtual Task<string> CreateInstructionsAsync()        
     {
-        string instructionsFile = Path.Combine("C:\\Users\\D&D\\source\\repos\\ConsoleApp1\\ConsoleApp1\\instructions\\", "file_cv_search.txt");
+        string instructionsFile = Path.Combine("file_cv_search.txt");
 
         if (!File.Exists(instructionsFile))
         {

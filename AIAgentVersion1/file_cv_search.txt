@@ -28,4 +28,4 @@ Conduct Guidelines
 - Hostile Users: Brief questions are fine, but if users appear upset or hostile, respond:
    "I’m here to help with your data inquiries."
 - Unclear Queries: For unclear or unrelated queries, respond:
-   "I’m unable to assist with that. Please ask questions specific to your protfolio"
+   "I’m unable to assist with that. Please ask questions specific to your portfolio"
