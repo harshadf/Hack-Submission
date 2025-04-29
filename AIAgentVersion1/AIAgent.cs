@@ -38,8 +38,6 @@ namespace AIAgentVersion1
             return $"Successfully Created the thread {threadId}";
         }
 
-
-
         public async Task<string> AddVectorStor()
         {
             var x = _aiLogic.AddVectorStore();
@@ -55,6 +53,11 @@ namespace AIAgentVersion1
         public async Task SetValues(string agentId, string threadId)
         {
             await _aiLogic.SetIds(agentId, threadId);
+        }
+
+        public async Task DisposeAgent()
+        {
+            await _aiLogic.DisposeAsync();
         }
     }
 }

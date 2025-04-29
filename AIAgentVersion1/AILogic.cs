@@ -1,6 +1,5 @@
 using Azure;
 using Azure.AI.Projects;
-using System.ClientModel;
 using System.Text.Json;
 
 namespace AgentWorkshop.Client;
@@ -23,11 +22,10 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
     const float temperature = 0.1f;
     const float topP = 0.1f;
 
-    private bool disposeAgent = true;
-
     private VectorStore? vectorStore;
 
-    public virtual IEnumerable<ToolDefinition> IntialiseLabTools() => [];
+    public IEnumerable<ToolDefinition> IntialiseLabTools() =>
+        [new FileSearchToolDefinition(), new CodeInterpreterToolDefinition()];
 
     public async Task SetIds(string aid, string tid)
     {
@@ -40,9 +38,10 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
         string instructions = await CreateInstructionsAsync();
         agent = await agentClient.CreateAgentAsync(
             model: ModelName,
-            name: "CV AI Agent New",
+            name: "CV AI Agent",
             instructions: instructions,
-            temperature: temperature
+            temperature: temperature,
+            tools: IntialiseLabTools()
         );
         agentId = agent.Id;
         return agentId;
@@ -72,6 +71,7 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
         await agentClient.UpdateAgentAsync(
             assistantId: existingAgent.Result.Value.Id,
             instructions: existingAgent.Result.Value.Instructions,
+            tools: IntialiseLabTools(),
             temperature: temperature,
             toolResources: toolResources
         );
@@ -127,20 +127,18 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
                     }
                     else if (contentItem is MessageImageFileContent imageFileItem)
                     {
-                        Console.Write($"<image from ID: {imageFileItem.FileId}");
+                        await DownloadImageFileContentAsync(imageFileItem);
                     }
-                    Console.WriteLine();
                 }
             }
             else
-                break;
-            
+                break;            
         }
 
         return responseText;
-    }   
+    }
 
-     
+
     private ToolResources? InitialiseToolResources()
     {
         if (vectorStore is null)
@@ -185,32 +183,44 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
             files.Add(file);
         }
 
-        var x = files.Select(f => f.Id).ToList();
-
         vectorStore = await agentClient.CreateVectorStoreAsync(
             fileIds: files.Select(f => f.Id).ToList(), 
             name: "Portfolio Information Vector Store"
         );
     }
 
-
-    public async ValueTask DisposeAsync()
+    private async Task DownloadImageFileContentAsync(MessageImageFileContent imageContent)
     {
-        if (!disposeAgent)
+        if (agentClient is null)
         {
             return;
         }
 
+        BinaryData fileContent = await agentClient.GetFileContentAsync(imageContent.FileId);
+        string directory = Path.Combine("Images");
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        string filePath = Path.Combine(directory, imageContent.FileId + ".png");
+        await File.WriteAllBytesAsync(filePath, fileContent.ToArray());
+    }
+
+
+    public async ValueTask DisposeAsync()
+    {
+        var agentClient = Client.GetAgentsClient();
         if (agentClient is not null)
         {
             if (thread is not null)
             {
-                await agentClient.DeleteThreadAsync(thread.Id);
+                await agentClient.DeleteThreadAsync(threadId);
             }
 
             if (agent is not null)
             {
-                await agentClient.DeleteAgentAsync(agent.Id);
+                await agentClient.DeleteAgentAsync(agentId);
             }
         }
     }
