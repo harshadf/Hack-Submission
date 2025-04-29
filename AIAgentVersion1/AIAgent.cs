@@ -38,10 +38,9 @@ namespace AIAgentVersion1
             return $"Successfully Created the thread {threadId}";
         }
 
-        public async Task<string> AddVectorStor()
+        public async Task AddVectorStor()
         {
-            var x = _aiLogic.AddVectorStore();
-            return $"Successfully Created the";
+            await _aiLogic.AddVectorStore();
         }
 
         public async Task<string> ChatWithAI(string prompt)

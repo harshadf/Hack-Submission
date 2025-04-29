@@ -166,7 +166,6 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
         return Task.FromResult(instructions);
     }
 
-
     private async Task InitialiseLabAsync(AgentsClient agentClient)
     {
         string datasheet = "C:\\Users\\D&D\\Desktop\\cv";
