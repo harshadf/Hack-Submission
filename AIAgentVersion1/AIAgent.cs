@@ -58,5 +58,9 @@ namespace AIAgentVersion1
         {
             await _aiLogic.DisposeAsync();
         }
+        public async Task<string> UploadFileToBlob(string filePath, string connectionString, string containerName)
+        {
+            return await _aiLogic.UploadFileToBlobAsync(filePath, connectionString, containerName);
+        }
     }
 }

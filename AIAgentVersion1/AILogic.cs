@@ -1,5 +1,7 @@
 using Azure;
 using Azure.AI.Projects;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using System.Text.Json;
 
 namespace AgentWorkshop.Client;
@@ -222,5 +224,27 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
                 await agentClient.DeleteAgentAsync(agentId);
             }
         }
+    }
+
+    public async Task<string> UploadFileToBlobAsync(string filePath, string connectionString, string containerName)
+    {
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException("The specified file does not exist.", filePath);
+        }
+
+        BlobServiceClient blobServiceClient = new(connectionString);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+        await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+        string fileName = Path.GetFileName(filePath);
+        BlobClient blobClient = containerClient.GetBlobClient(fileName);
+
+        using FileStream uploadFileStream = File.OpenRead(filePath);
+        await blobClient.UploadAsync(uploadFileStream, overwrite: true);
+        uploadFileStream.Close();
+
+        return blobClient.Uri.ToString();
     }
 }

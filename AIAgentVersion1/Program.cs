@@ -82,3 +82,31 @@ app.MapGet("/DisposeAgent", async () =>
 .WithOpenApi();
 
 app.Run();
+
+app.MapPost("/UploadFileToBlob", async (
+    HttpRequest request,
+    IConfiguration config) =>
+{
+    var form = await request.ReadFormAsync();
+
+    string? filePath = form[""];
+    string? connectionString = form[""];
+    string? containerName = form[""];
+
+    if (string.IsNullOrEmpty(filePath) || string.IsNullOrEmpty(connectionString) || string.IsNullOrEmpty(containerName))
+    {
+        return Results.BadRequest("Missing one or more required fields: filePath, connectionString, containerName");
+    }
+
+    try
+    {
+        var result = await aiAgent.UploadFileToBlob(filePath, connectionString, containerName);
+        return Results.Ok($"Uploaded file to blob: {result}");
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Failed to upload file: {ex.Message}");
+    }
+})
+.WithName("UploadFileToBlob")
+.WithOpenApi();
