@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Paper, List, ListItem, ListItemText, TextField, Button } from '@mui/material';
 import { usePromptStore } from './store/usePromptStore';
+import axios from '../src/axios';
 
 function ChatBox() {
   const [chatMessages, setChatMessages] = useState([]);
@@ -9,22 +10,40 @@ function ChatBox() {
   const secondText = usePromptStore((state) => state.secondText);
   const setSecondText = usePromptStore((state) => state.setSecondText);
   const getCombinedText = usePromptStore((state) => state.getCombinedText);
+  const [aiResponse, setAiResponse] = useState("");
 
-  const handleSendChat = () => {
+  useEffect(() => {
     const prompt = getCombinedText();
-    console.log("prompt text: ", prompt);
-
-    if (secondText.trim() === '') return;
-
     const userMessage = { from: 'user', text: prompt };
     setChatMessages((prev) => [...prev, userMessage]);
     setSecondText('');
 
     // Simulate AI response after a short delay
     setTimeout(() => {
-      const aiResponse = { from: 'ai', text: `AI Response to: "${userMessage.text}"` };
-      setChatMessages((prev) => [...prev, aiResponse]);
+      const aiResponseText = { from: 'ai', text: `${aiResponse}` };
+      setChatMessages((prev) => [...prev, aiResponseText]);
     }, 500);
+  }, [aiResponse]);
+
+  const handleSendChat = async () => {
+    const prompt = getCombinedText();
+    console.log("prompt text: ", prompt);
+
+    // if (secondText.trim() === '') return;
+
+    await axios.post(`/ChatWithAI/`, { prompt }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then((res) => {
+      console.log('res: ', res);
+      setAiResponse(res.data);
+      console.log('aiResponse state: ', aiResponse);
+    })
+    .catch((er) => {
+      console.log(er);
+    })
   };
 
   return (

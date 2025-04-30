@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Typography, Stack } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import axios from 'axios';
+import axios from '../src/axios';
 
 function InputFileUpload() {
   const [fileName, setFileName] = useState('');
@@ -19,7 +19,7 @@ function InputFileUpload() {
     try {
       setUploading(true);
 
-      const response = await axios.post('https://localhost:7000/UploadCV', formData, {
+      const response = await axios.post('UploadCv', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

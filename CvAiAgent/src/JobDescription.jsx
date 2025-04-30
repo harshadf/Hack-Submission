@@ -7,16 +7,6 @@ function JobDescription() {
   const firstText = usePromptStore((state) => state.firstText);
   const setFirstText = usePromptStore((state) => state.setFirstText);
 
-  useEffect(() => {
-    axios.get('posts')
-    .then((res) => {
-      console.log(res.data);
-    })
-    .catch((er) => {
-      console.log(er);
-    })
-  }, []);
-
   return (
     <Stack
       spacing={2}
