@@ -1,70 +1,78 @@
-# Getting Started with Create React App
+## PROJECT NAME
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+CV AI Agent using C#
 
-## Available Scripts
+## PROJECT DESCRIPTION
 
-In the project directory, you can run:
+*  For job seekers, it's simple: you paste a job description, upload your CV and the AI instantly analyzes it,
+then helps you tailor your CV to match what employers are really looking for. It’s like having a personal career coach, powered by AI.
 
-### `npm start`
+*  But the real power is for recruiters. They can upload a batch of CVs and the AI ranks them, showing which candidates best match the company’s specific job requirements. Instead of spending hours reading CVs, the recruiter gets a clear, prioritized list.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## FEATURES
+* Mainly our project have two end-users. `Job Seekers` and `Job Recruiters`
+### Features of the Job Seekers side
+* User can upload his CV to the Ai Agent.
+* Then he can copy and paste the job description from the internet.
+* After he can ask comparison between his CV and the job description and get the percentage for each requirement.
+* Furthermore he can get the suggestion from the Ai Agent to improve CV to that specific requirement respectively.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Features of the Job Recruiter side
+* User can upload the bulk of CVs.
+* Can add a job description to compare with.
+* After user can get the prioritise list of order that matches the most with the description.
+* Also user can ask alternative questions such as who can be the most team collaborative member.
 
-### `npm test`
+## TECHNOLOGY STACK
+* C# for implementing the logic and running the recommendation system.
+* AI Agent Tool :- gpt4o
+* Chat completion AI Agent Tool to get the response as text based.
+* Grounding with bing search :- For the knowledge source.
+* File search :- For the knowledge source.
+* React Js for the front end development.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## HOW IT WORKS
+* We used File search and grounding with bing search for our ai agent's knowledge.
+* Then it compares with the CVs that we uploaded to the agent.
 
-### `npm run build`
+## PREREQUISITES
+* .NET 8+ or above for compiling and running the code.
+* IDE such as Visual Studio and Visual Code.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## HOW TO RUN
+1. Install Git on your computer: https://git-scm.com/downloads
+2. Then on your terminal. Run 👇
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```sh
+git clone https://github.com/harshadf/Hack-Submission.git
+```
+3. Navigate to the directory
+```sh
+cd Hack-Submission
+```
+4. Double click on the file name called `AIAgentVersion1.sln`
+5. It will Open from your favorite IDE and then run.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## FUTURE IMPROVEMENTS
+* AI-Powered Interview Suggestions.
+* CV Auto-Improvement Suggestions.
+* ATS Friendly Integrations.
 
-### `npm run eject`
+## Authors
+🚩 Harsha Fernando: https://github.com/harshadf
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+🚩 Darshana Senevirathna: https://github.com/Darshana97
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+🚩 Menuka Madhuranga: https://github.com/menukamadhu
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+🚩 Danuja Greru: https://github.com/danujav
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## URLs
+### Project Repository URL
+* https://github.com/harshadf/Hack-Submission.git
 
-## Learn More
+### Project Video
+* https://www.youtube.com/watch?v=p5xsCT8SMgU
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### License. 🛡️
+Copyright 2025. All Rights Reserved.
