@@ -14,6 +14,8 @@ public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDis
     private string BlobServiceClientConnectionString { get; } = options.BlobServiceClientConnectionString;
     private string ContainerName { get; } = options.ContainerName;
 
+    private ToolConnectionList? connectionList;
+
     private AgentsClient? agentClient;
 
     private Agent? agent;
@@ -29,7 +31,7 @@ public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDis
     const float temperature = 0.1f;
 
     public IEnumerable<ToolDefinition> IntialiseLabTools() =>
-        [new FileSearchToolDefinition(), new CodeInterpreterToolDefinition()];
+        [new FileSearchToolDefinition(), new CodeInterpreterToolDefinition(), new BingGroundingToolDefinition(connectionList)];
 
 
     public void SetAgentIdAndThreadId(string aid, string tid)
@@ -41,6 +43,7 @@ public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDis
     public async Task<string> CreateAgent()
     {
         agentClient = Client.GetAgentsClient();
+        await CreateBingGroundingTool();
         string instructions = await CreateInstructionsAsync();
         agent = await agentClient.CreateAgentAsync(
             model: ModelName,
@@ -68,7 +71,7 @@ public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDis
     public async Task AddVectorStore()
     {
         var agentClient = Client.GetAgentsClient();
-        await InitialiseLabAsync(agentClient);
+        await CreateVectorStoreUsingLocalFiles(agentClient);        
         ToolResources? toolResources = InitialiseToolResources();
 
         var existingAgent = agentClient.GetAgentAsync(agentId);
@@ -140,7 +143,6 @@ public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDis
             else
                 break;            
         }
-
         return responseText;
     }
 
@@ -280,7 +282,7 @@ public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDis
         return true;
     }
 
-    private async Task InitialiseLabAsync(AgentsClient agentClient)
+    private async Task CreateVectorStoreUsingLocalFiles(AgentsClient agentClient)
     {
         string datasheet = "UploadedFiles\\";
         string[] datastorefiles = Directory.GetFiles(datasheet);
@@ -300,5 +302,17 @@ public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDis
             fileIds: files.Select(f => f.Id).ToList(),
             name: "Portfolio Information Vector Store"
         );
+    }
+    private async Task CreateBingGroundingTool()
+    {
+        ConnectionResponse bingConnection =await Client.GetConnectionsClient().GetConnectionAsync(options.BingConnectionName);
+        if (bingConnection != null)
+        {
+            var connectionId = bingConnection.Id;
+            connectionList = new()
+            {
+                ConnectionList = { new ToolConnection(connectionId) }
+            };
+        }
     }
 }

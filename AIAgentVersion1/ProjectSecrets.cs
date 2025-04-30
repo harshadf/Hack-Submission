@@ -6,5 +6,6 @@
         public string ContainerName { get; set; } = string.Empty;
         public string ProjectConnectionString { get; set; } = string.Empty;
         public string DeployementName { get; set; } = string.Empty;
+        public  string BingConnectionName { get; set; } = string.Empty;
     }
 }
