@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Paper, List, ListItem, ListItemText, TextField, Button } from '@mui/material';
+import { Box, Typography, Paper, List, ListItem, TextField, Button } from '@mui/material';
 import { usePromptStore } from './store/usePromptStore';
 import axios from '../src/axios';
 
 function ChatBox() {
   const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
 
   const secondText = usePromptStore((state) => state.secondText);
   const setSecondText = usePromptStore((state) => state.setSecondText);
@@ -13,23 +12,17 @@ function ChatBox() {
   const [aiResponse, setAiResponse] = useState("");
 
   useEffect(() => {
-    const prompt = getCombinedText();
-    const userMessage = { from: 'user', text: prompt };
-    setChatMessages((prev) => [...prev, userMessage]);
-    setSecondText('');
-
-    // Simulate AI response after a short delay
-    setTimeout(() => {
-      const aiResponseText = { from: 'ai', text: `${aiResponse}` };
-      setChatMessages((prev) => [...prev, aiResponseText]);
-    }, 500);
+    const aiResponseText = { from: 'ai', text: `${aiResponse}` };
+    setChatMessages((prev) => [...prev, aiResponseText]);
   }, [aiResponse]);
 
   const handleSendChat = async () => {
     const prompt = getCombinedText();
     console.log("prompt text: ", prompt);
 
-    // if (secondText.trim() === '') return;
+    const userMessage = { from: 'user', text: prompt };
+    setChatMessages((prev) => [...prev, userMessage]);
+    setSecondText('');
 
     await axios.post(`/ChatWithAI/`, { prompt }, {
       headers: {
@@ -101,10 +94,15 @@ function ChatBox() {
                     wordBreak: 'break-word',
                   }}
                 >
-                  {msg.text}
+                  {msg.text.replace(/【\d+:\d+†source】/g, '').split('\n').map((line, i) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
                 </Box>
               </ListItem>
-            ))}
+              ))}
           </List>
         </Paper>
 
