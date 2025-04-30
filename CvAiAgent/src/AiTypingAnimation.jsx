@@ -4,9 +4,9 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 function AiTypingAnimation() {
   return (
-    <div style={{ width: 500, height: 500 }}>
+    <div style={{ width: 250, height: 100 }}>
       <DotLottieReact
-        src="https://lottie.host/aa2000ab-d842-4200-87b3-207dae908316/Fx31ODRXO7.lottie"
+        src="https://lottie.host/de64b97e-d0d5-4753-92c7-c6dd20c0f095/2KjahJqWLu.lottie"
         loop
         autoplay
       />

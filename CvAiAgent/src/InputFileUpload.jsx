@@ -51,11 +51,11 @@ function InputFileUpload() {
     <Stack
       spacing={2}
       sx={{
-        width: '300px',
+        width: '350px',
         alignItems: 'center',
       }}
     >
-      <Typography variant="h6">Upload Your CV</Typography>
+      {/* <Typography variant="h6">Upload Your CV</Typography> */}
 
       <Button
         variant="outlined"

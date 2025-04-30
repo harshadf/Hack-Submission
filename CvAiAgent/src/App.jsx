@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Paper, Typography, Divider } from '@mui/material';
 import ChatBox from './ChatBox';
 import InputFileUpload from './InputFileUpload';
 import JobDescription from './JobDescription';
@@ -8,68 +8,91 @@ import ResponsiveAppBar from './ResponsiveAppBar';
 
 function App() {
   return (
-    <Box sx={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyItems: 'center' }}>
-      {/* Navbar at the top */}
+    <Box
+      sx={{
+        height: '100vh',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: '#282C35',
+      }}
+    >
+      {/* Top Navigation Bar */}
       <ResponsiveAppBar />
 
       {/* Main Content */}
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'row',
-          flexGrow: 1,
-          width: '100%',
-          p: 2,
-          gap: 2,
+          flex: 1,
           overflow: 'hidden',
+          p: 1,
+          gap: 3,
         }}
       >
-        {/* Left side: File Upload and Job Description */}
-        <Box
+        {/* Left Panel */}
+        <Paper
+          elevation={3}
           sx={{
-            width: '300px',
-            height: 'fit-content',
+            width: '100%',
+            maxWidth: 420,
+            overflowY: 'auto',
+            overflowX: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            p: 2,
-            pl: 30,
+            p: 3,
             gap: 3,
+            borderRadius: 3,
+            bgcolor: '',
+            boxSizing: 'border-box',
+        
           }}
         >
-          <InputFileUpload />
-          <JobDescription />
-        </Box>
+          {/* AI Animation */}
+          {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AiTypingAnimation />
+            <Typography variant="subtitle2" color="text.secondary">
+              AI is standing by...
+            </Typography>
+          </Box> */}
 
-        {/* Right side: Chat Area and AI Animation */}
+          <Divider />
+
+          <Box>
+            <Typography variant="subtitle1" gutterBottom>
+              Upload Resume
+            </Typography>
+            <InputFileUpload />
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle1"f gutterBottom>
+              Job Description
+            </Typography>
+            <JobDescription />
+          </Box>
+        </Paper>
+
         <Box
           sx={{
             flex: 1,
             display: 'flex',
-            flexDirection: 'row',
-            gap: 2,
-            pl: 15,
+            flexDirection: 'column'
           }}
         >
-          {/* AI Animation */}
-          <Box
+          <Paper
+            elevation={3}
             sx={{
               flex: 1,
+              p: 3,
+              borderRadius: 3,
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '200px',
-              width: '100%',
-              px: 5
+              flexDirection: 'column',
+              bgcolor: '#ffffff',
             }}
           >
-            <AiTypingAnimation />
-          </Box>
-          
-          {/* Chat Box */}
-          <Box sx={{ flex: 3 }}>
             <ChatBox />
-          </Box>
+          </Paper>
         </Box>
       </Box>
     </Box>

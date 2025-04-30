@@ -2,23 +2,37 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Paper, List, ListItem, TextField, Button } from '@mui/material';
 import { usePromptStore } from './store/usePromptStore';
 import axios from '../src/axios';
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 function ChatBox() {
   const [chatMessages, setChatMessages] = useState([]);
-
   const secondText = usePromptStore((state) => state.secondText);
+  const firstText = usePromptStore((state) => state.firstText);
   const setSecondText = usePromptStore((state) => state.setSecondText);
   const getCombinedText = usePromptStore((state) => state.getCombinedText);
-  const [aiResponse, setAiResponse] = useState("");
+  const [aiResponse, setAiResponse] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isJobDescriptionSent, setIsJobDescriptionSent] = useState(false);
 
   useEffect(() => {
     const aiResponseText = { from: 'ai', text: `${aiResponse}` };
+    if (aiResponseText.text == '') return;
+    console.log(aiResponseText);
     setChatMessages((prev) => [...prev, aiResponseText]);
   }, [aiResponse]);
 
+  useEffect(() => {
+    setIsJobDescriptionSent(false);
+  }, [firstText]);
+
   const handleSendChat = async () => {
-    const prompt = getCombinedText();
+    if (firstText != '' && !isJobDescriptionSent) {
+      setIsJobDescriptionSent(true);
+    }
+    const prompt = isJobDescriptionSent ? secondText : getCombinedText();
     console.log("prompt text: ", prompt);
+    setIsLoading(true);
 
     const userMessage = { from: 'user', text: prompt };
     setChatMessages((prev) => [...prev, userMessage]);
@@ -33,21 +47,22 @@ function ChatBox() {
       console.log('res: ', res);
       setAiResponse(res.data);
       console.log('aiResponse state: ', aiResponse);
+      setIsLoading(false);
     })
     .catch((er) => {
       console.log(er);
+      setIsLoading(false);
     })
   };
 
   return (
     <Box sx={{ 
-      height: '100%', 
-      width: '100vh', 
+      height: '100%',
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center', 
       justifyContent: 'flex-start', 
-      p: 2 
+      p: 2
     }}>
       
       <Box sx={{ 
@@ -57,21 +72,21 @@ function ChatBox() {
         display: 'flex', 
         flexDirection: 'column' 
       }}>
-        
-        <Typography variant="h5" gutterBottom>
+
+        <Typography variant="h6" gutterBottom>
           Chat with AI Agent
         </Typography>
-
         <Paper 
           variant="outlined" 
           sx={{ 
-            flex: 1, 
+            flexGrow: 1, 
             overflowY: 'auto', 
             p: 2, 
             mb: 2, 
             display: 'flex', 
             flexDirection: 'column',
-            minHeight: '400px'
+            minHeight: '450px',
+            maxHeight: '400px'
           }}
         >
           <List>
@@ -103,6 +118,17 @@ function ChatBox() {
                 </Box>
               </ListItem>
               ))}
+              <Box 
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    maxWidth: '70%',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {isLoading && (<Skeleton count={5} />) }
+              </Box>
           </List>
         </Paper>
 

@@ -5,12 +5,16 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import AdbIcon from '@mui/icons-material/Adb';
 import Box from '@mui/material/Box';
+import AiTypingAnimation from './AiTypingAnimation';
 
 function ResponsiveAppBar() {
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ bgcolor: '#282C35'}}>
       <Container maxWidth="xl">
-        <Toolbar disableGutters sx={{ justifyContent: 'center' }}>
+        <Toolbar disableGutters sx={{ justifyContent: 'center', position: 'relative' }}>
+          <Box sx={{ position: 'absolute', left: 0 }}>
+            <AiTypingAnimation />
+          </Box>
           <Box display="flex" alignItems="center">
             <AdbIcon sx={{ mr: 1 }} />
             <Typography
