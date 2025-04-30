@@ -4,22 +4,16 @@ using Azure.Identity;
 
 namespace AIAgentVersion1
 {
-    public class AIAgent
+    public class AIAgent 
     {
-        public string _apiDeploymentName { get; set; }
+        private AIProjectClient _projectClient { get; set; }
 
-        public string _projectConnectionString { get; set; }
+        private AILogic _aiLogic { get; set; }
 
-        AIProjectClient _projectClient { get; set; }
-
-        AILogic _aiLogic { get; set; }
-
-        public AIAgent(string apiDeploymentName, string projectConnectionString)
+        public AIAgent(ProjectSecrets options)
         {
-            _apiDeploymentName = apiDeploymentName;
-            _projectConnectionString = projectConnectionString;
-            _projectClient = new AIProjectClient(_projectConnectionString, new DefaultAzureCredential());
-            _aiLogic = new AILogic(_projectClient, _apiDeploymentName);
+            _projectClient = new AIProjectClient(options.ProjectConnectionString, new DefaultAzureCredential());
+            _aiLogic = new AILogic(_projectClient, options);            
             CreateAgent().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
@@ -45,22 +39,21 @@ namespace AIAgentVersion1
 
         public async Task<string> ChatWithAI(string prompt)
         {
-            var agentResponse = await _aiLogic.ChatWithTheAIAgents(prompt);
-            return agentResponse;
+            return await _aiLogic.ChatWithTheAIAgents(prompt);
         }
 
-        public async Task SetValues(string agentId, string threadId)
+        public void SetValues(string agentId, string threadId)
         {
-            await _aiLogic.SetIds(agentId, threadId);
+             _aiLogic.SetAgentIdAndThreadId(agentId, threadId);
         }
 
         public async Task DisposeAgent()
         {
             await _aiLogic.DisposeAsync();
         }
-        public async Task<string> UploadFileToBlob(string filePath, string connectionString, string containerName)
+        public async Task<string> UploadFileToBlob(string filePath)
         {
-            return await _aiLogic.UploadFileToBlobAsync(filePath, connectionString, containerName);
-        }
+            return await _aiLogic.UploadFileToBlobAsync(filePath);
+        }        
     }
 }

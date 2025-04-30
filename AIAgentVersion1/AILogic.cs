@@ -1,46 +1,50 @@
+using AIAgentVersion1;
 using Azure;
 using Azure.AI.Projects;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using System.Text.Json;
+using System.Data;
 
 namespace AgentWorkshop.Client;
 
-public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposable
+public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDisposable
 {
-    protected AIProjectClient Client { get; } = client;
-    protected string ModelName { get; } = modelName;
-    protected AgentsClient? agentClient;
-    protected Agent? agent;
-    protected AgentThread? thread;
+    private AIProjectClient Client { get; } = client;
+    private string ModelName { get; } = options.DeployementName;
+    private string BlobServiceClientConnectionString { get; } = options.BlobServiceClientConnectionString;
+    private string ContainerName { get; } = options.ContainerName;
+
+    private AgentsClient? agentClient;
+
+    private Agent? agent;
+
+    private AgentThread? thread;
+
+    private VectorStore? vectorStore;
 
     private string agentId = string.Empty;
     private string threadId = string.Empty;
 
-    private readonly JsonSerializerOptions options = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    const int maxCompletionTokens = 4096;
-    const int maxPromptTokens = 10240;
     const float temperature = 0.1f;
-    const float topP = 0.1f;
-
-    private VectorStore? vectorStore;
 
     public IEnumerable<ToolDefinition> IntialiseLabTools() =>
         [new FileSearchToolDefinition(), new CodeInterpreterToolDefinition()];
 
-    public async Task SetIds(string aid, string tid)
+
+    public void SetAgentIdAndThreadId(string aid, string tid)
     {
         agentId = aid;
         threadId = tid;
     }
+
     public async Task<string> CreateAgent()
     {
         agentClient = Client.GetAgentsClient();
         string instructions = await CreateInstructionsAsync();
         agent = await agentClient.CreateAgentAsync(
             model: ModelName,
-            name: "CV AI Agent",
+            name: "Resume Feedback AI Agent",
             instructions: instructions,
             temperature: temperature,
             tools: IntialiseLabTools()
@@ -64,7 +68,7 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
     public async Task AddVectorStore()
     {
         var agentClient = Client.GetAgentsClient();
-        await InitialiseLabAsync(agentClient);
+        await CreateVectorStoreUsingFilesFromTheBlob(agentClient);
         ToolResources? toolResources = InitialiseToolResources();
 
         var existingAgent = agentClient.GetAgentAsync(agentId);
@@ -154,7 +158,7 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
         };
     }
 
-    protected virtual Task<string> CreateInstructionsAsync()        
+    private Task<string> CreateInstructionsAsync()        
     {
         string instructionsFile = Path.Combine("file_cv_search.txt");
 
@@ -166,28 +170,6 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
         string instructions = File.ReadAllText(instructionsFile);
 
         return Task.FromResult(instructions);
-    }
-
-    private async Task InitialiseLabAsync(AgentsClient agentClient)
-    {
-        string datasheet = "C:\\Users\\D&D\\Desktop\\cv";
-        string[] datastorefiles = Directory.GetFiles(datasheet);
-
-        List<AgentFile> files = new List<AgentFile>(); 
-
-        foreach (string datafile in datastorefiles)
-        {
-            AgentFile file = await agentClient.UploadFileAsync(
-                filePath: datafile,
-                purpose: AgentFilePurpose.Agents
-            );
-            files.Add(file);
-        }
-
-        vectorStore = await agentClient.CreateVectorStoreAsync(
-            fileIds: files.Select(f => f.Id).ToList(), 
-            name: "Portfolio Information Vector Store"
-        );
     }
 
     private async Task DownloadImageFileContentAsync(MessageImageFileContent imageContent)
@@ -226,15 +208,15 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
         }
     }
 
-    public async Task<string> UploadFileToBlobAsync(string filePath, string connectionString, string containerName)
+    public async Task<string> UploadFileToBlobAsync(string filePath)
     {
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException("The specified file does not exist.", filePath);
         }
 
-        BlobServiceClient blobServiceClient = new(connectionString);
-        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        BlobServiceClient blobServiceClient = new(BlobServiceClientConnectionString);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
 
         await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
@@ -246,5 +228,55 @@ public class AILogic(AIProjectClient client, string modelName) : IAsyncDisposabl
         uploadFileStream.Close();
 
         return blobClient.Uri.ToString();
+    }
+
+    public async Task CreateVectorStoreUsingFilesFromTheBlob(AgentsClient agentClient)
+    {
+
+        BlobServiceClient blobServiceClient = new BlobServiceClient(BlobServiceClientConnectionString);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
+
+        List<AgentFile> files = new List<AgentFile>();
+
+        string tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDirectory);
+
+        foreach (BlobItem blobItem in containerClient.GetBlobs())
+        {
+            BlobClient blobClient = containerClient.GetBlobClient(blobItem.Name);
+
+            string tempFilePath = Path.Combine(tempDirectory, blobItem.Name);
+            await blobClient.DownloadToAsync(tempFilePath);
+
+            AgentFile file = await agentClient.UploadFileAsync(
+                filePath: tempFilePath,
+                purpose: AgentFilePurpose.Agents
+            );
+            files.Add(file);
+
+            File.Delete(tempFilePath);
+        }
+
+        vectorStore = await agentClient.CreateVectorStoreAsync(
+            fileIds: files.Select(f => f.Id).ToList(),
+            name: "Portfolio Information Vector Store"
+        );
+    }
+
+    public async Task<bool> DeleteFileFromBlobAsync(string fileName)
+    {
+        BlobServiceClient blobServiceClient = new(BlobServiceClientConnectionString);
+        BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(ContainerName);
+
+        BlobClient blobClient = containerClient.GetBlobClient(fileName);
+
+        bool exists = await blobClient.ExistsAsync();
+        if (!exists)
+        {
+            return false;
+        }
+
+        await blobClient.DeleteAsync();
+        return true;
     }
 }
