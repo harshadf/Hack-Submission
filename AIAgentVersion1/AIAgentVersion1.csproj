@@ -24,4 +24,8 @@
     <ProjectReference Include="..\AIAgentVersion1.ServiceDefaults\AIAgentVersion1.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="UploadedFiles\" />
+  </ItemGroup>
+
 </Project>

@@ -21,6 +21,18 @@ ProjectSecrets secrets = new ProjectSecrets
     ContainerName = builder.Configuration.GetSection("ProjectSecrets").GetSection("BlobStorageContainerName").Value
 };
 
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") // React dev server URL
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -87,7 +99,6 @@ app.MapGet("/DisposeAgent", async () =>
 app.MapPost("/UploadFileToBlob", async ([FromBody] FileUpload fileUpload) =>
 {
     var runAgent = await aiAgent.UploadFileToBlob(fileUpload.FilePath);
-
 })
 .WithName("UploadFileToBlob")
 .WithOpenApi();
@@ -116,6 +127,9 @@ app.MapPost("/UploadCv", async (HttpRequest request) =>
     }
     return Results.Ok("File saved successfully.");
 })
-.DisableAntiforgery();
+.WithName("UploadCv")
+.WithOpenApi();
+
+app.UseCors("AllowReactApp");
 
 app.Run();

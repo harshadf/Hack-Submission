@@ -68,7 +68,7 @@ public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDis
     public async Task AddVectorStore()
     {
         var agentClient = Client.GetAgentsClient();
-        await CreateVectorStoreUsingFilesFromTheBlob(agentClient);
+        await InitialiseLabAsync(agentClient);
         ToolResources? toolResources = InitialiseToolResources();
 
         var existingAgent = agentClient.GetAgentAsync(agentId);
@@ -278,5 +278,27 @@ public class AILogic(AIProjectClient client, ProjectSecrets options) : IAsyncDis
 
         await blobClient.DeleteAsync();
         return true;
+    }
+
+    private async Task InitialiseLabAsync(AgentsClient agentClient)
+    {
+        string datasheet = "UploadedFiles\\";
+        string[] datastorefiles = Directory.GetFiles(datasheet);
+
+        List<AgentFile> files = new List<AgentFile>();
+
+        foreach (string datafile in datastorefiles)
+        {
+            AgentFile file = await agentClient.UploadFileAsync(
+                filePath: datafile,
+                purpose: AgentFilePurpose.Agents
+            );
+            files.Add(file);
+        }
+
+        vectorStore = await agentClient.CreateVectorStoreAsync(
+            fileIds: files.Select(f => f.Id).ToList(),
+            name: "Portfolio Information Vector Store"
+        );
     }
 }
