@@ -1,4 +1,5 @@
 using AIAgentVersion1;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,12 +7,14 @@ builder.AddServiceDefaults();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<AIAgent>(sp =>
+
+ProjectSecrets secrets = new ProjectSecrets
 {
-    var apiDeploymentName = "gpt-4o";
-    var projectConnectionString = "";
-    return new AIAgent(apiDeploymentName, projectConnectionString);
-});
+    DeployementName = builder.Configuration.GetSection("ProjectSecrets").GetSection("DeployementName").Value,
+    ProjectConnectionString = builder.Configuration.GetSection("ProjectSecrets").GetSection("ProjectConnectionString").Value,
+    BlobServiceClientConnectionString = builder.Configuration.GetSection("ProjectSecrets").GetSection("BlobStorageConnectionString").Value,
+    ContainerName = builder.Configuration.GetSection("ProjectSecrets").GetSection("BlobStorageContainerName").Value
+};
 
 var app = builder.Build();
 
@@ -26,12 +29,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
-var aiAgent = new AIAgent(
-    "gpt-4o",
-    "");
-
-
+var aiAgent = new AIAgent(secrets);
 
 app.MapGet("/CreateAgent", async () =>
 {
@@ -57,18 +55,18 @@ app.MapGet("/AddVectorStore", async () =>
 .WithOpenApi();
 
 
-app.MapGet("/ChatWithAI/{prompt}", async (string prompt) =>
+app.MapPost("/ChatWithAI", async ([FromBody] UserPrompt request) =>
 {
-    var runAgent = await aiAgent.ChatWithAI(prompt);
+    var runAgent = await aiAgent.ChatWithAI(request.Prompt);
     return Results.Ok(runAgent); 
 })
 .WithName("ChatWithAI")
 .WithOpenApi();
 
 
-app.MapGet("/SetValues/{aid}/{tid}", async (string aid, string tid) =>
+app.MapGet("/SetValues/{agentId}/{threadId}", (string agentId, string threadId) =>
 {
-    await aiAgent.SetValues(aid, tid);
+    aiAgent.SetValues(agentId, threadId);
 })
 .WithName("SetValues")
 .WithOpenApi();
@@ -81,32 +79,13 @@ app.MapGet("/DisposeAgent", async () =>
 .WithName("DisposeAgent")
 .WithOpenApi();
 
-app.Run();
 
-app.MapPost("/UploadFileToBlob", async (
-    HttpRequest request,
-    IConfiguration config) =>
+app.MapPost("/UploadFileToBlob", async ([FromBody] FileUpload fileUpload) =>
 {
-    var form = await request.ReadFormAsync();
+    var runAgent = await aiAgent.UploadFileToBlob(fileUpload.FilePath);
 
-    string? filePath = form[""];
-    string? connectionString = form[""];
-    string? containerName = form[""];
-
-    if (string.IsNullOrEmpty(filePath) || string.IsNullOrEmpty(connectionString) || string.IsNullOrEmpty(containerName))
-    {
-        return Results.BadRequest("Missing one or more required fields: filePath, connectionString, containerName");
-    }
-
-    try
-    {
-        var result = await aiAgent.UploadFileToBlob(filePath, connectionString, containerName);
-        return Results.Ok($"Uploaded file to blob: {result}");
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Failed to upload file: {ex.Message}");
-    }
 })
 .WithName("UploadFileToBlob")
 .WithOpenApi();
+
+app.Run();
