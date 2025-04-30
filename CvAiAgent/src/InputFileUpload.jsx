@@ -1,35 +1,47 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Typography, Stack } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import axios from '../src/axios';
 
 function InputFileUpload() {
-  const [fileName, setFileName] = useState('');
+  const [fileNames, setFileNames] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [fileResponse, setFileResponse] = useState(null);
+  const [succussMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    setSuccessMessage('Files are uploading...');
+  }, [fileNames]);
+  useEffect(() => {
+    setSuccessMessage('Files uploaded successfully!');
+  }, [fileResponse]);
 
   const handleFileChange = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    setFileName(file.name);
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
     const formData = new FormData();
-    formData.append('file', file);
+
+    Array.from(files).forEach((file) => {
+      formData.append('files', file);
+    });
+
+    setFileNames(Array.from(files).map((f) => f.name));
 
     try {
+      
       setUploading(true);
-
-      const response = await axios.post('UploadCv', formData, {
+      const response = await axios.post('UploadCV', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+          'Content-Type': 'multipart/form-data',
+        },
       });
-
-      console.log('File uploaded successfully', response.data);
-      alert('File uploaded successfully!');
+      setFileResponse(response.data);
+      console.log('Files uploaded successfully', response.data);
+      alert('Files uploaded successfully!');
     } catch (error) {
-      console.error('Error uploading file', error);
-      alert('Failed to upload file.');
+      console.error('Error uploading files', error);
+      alert('Failed to upload files.');
     } finally {
       setUploading(false);
     }
@@ -56,10 +68,12 @@ function InputFileUpload() {
         }}
         disabled={uploading}
       >
-        {fileName ? fileName : 'Upload a file'}
+        {fileNames.length > 0 ? succussMessage : 'Upload file(s)'}
         <input
           type="file"
           hidden
+          multiple
+          accept="application/pdf"
           onChange={handleFileChange}
         />
       </Button>
