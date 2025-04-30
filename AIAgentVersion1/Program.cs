@@ -18,7 +18,8 @@ ProjectSecrets secrets = new ProjectSecrets
     DeployementName = builder.Configuration.GetSection("ProjectSecrets").GetSection("DeployementName").Value,
     ProjectConnectionString = builder.Configuration.GetSection("ProjectSecrets").GetSection("ProjectConnectionString").Value,
     BlobServiceClientConnectionString = builder.Configuration.GetSection("ProjectSecrets").GetSection("BlobStorageConnectionString").Value,
-    ContainerName = builder.Configuration.GetSection("ProjectSecrets").GetSection("BlobStorageContainerName").Value
+    ContainerName = builder.Configuration.GetSection("ProjectSecrets").GetSection("BlobStorageContainerName").Value,
+    BingConnectionName = builder.Configuration.GetSection("ProjectSecrets").GetSection("BingConnectionName").Value
 };
 
 

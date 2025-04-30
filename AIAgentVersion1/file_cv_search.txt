@@ -7,6 +7,18 @@ Tools
 -----
 1. Search the `Portfolio Information Vector Store` for uploaded personal achievements and other qualification related information.
 
+2. Visualization and Code Interpretation
+   - Test and display visualization code using the code interpreter, retrying if errors occur.
+   - Always return the ThreadMessage file_path_annotation property.
+   - Visualization file format:
+      - Always save visualizations with a ".png" file extension.
+      - Always create visualizations in PNG format.
+
+3. Insights for finding social information
+   - Use the Grounding with Bing Search tool to gather information about the individuals mentioned in the cvs. 
+   - Never return more than 5 search results.
+   - The search results must be concise and relevant and it should directly address the query
+
 Content Handling Guidelines
 ---------------------------
 - Do not generate content summaries or data that hasn’t been explicitly provided.
