@@ -8,6 +8,11 @@ builder.AddServiceDefaults();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-XSRF-TOKEN";
+});
+
 ProjectSecrets secrets = new ProjectSecrets
 {
     DeployementName = builder.Configuration.GetSection("ProjectSecrets").GetSection("DeployementName").Value,
@@ -26,7 +31,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseAntiforgery();
 app.UseHttpsRedirection();
 
 var aiAgent = new AIAgent(secrets);
@@ -63,7 +68,6 @@ app.MapPost("/ChatWithAI", async ([FromBody] UserPrompt request) =>
 .WithName("ChatWithAI")
 .WithOpenApi();
 
-
 app.MapGet("/SetValues/{agentId}/{threadId}", (string agentId, string threadId) =>
 {
     aiAgent.SetValues(agentId, threadId);
@@ -87,5 +91,31 @@ app.MapPost("/UploadFileToBlob", async ([FromBody] FileUpload fileUpload) =>
 })
 .WithName("UploadFileToBlob")
 .WithOpenApi();
+
+app.MapPost("/UploadCv", async (HttpRequest request) =>
+{
+    var form = await request.ReadFormAsync();
+    var files = form.Files;
+    if (files == null || files.Count == 0)
+    {
+        return Results.BadRequest("No file uploaded.");
+    }
+
+    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles");
+    if (!Directory.Exists(uploadPath))
+    {
+        Directory.CreateDirectory(uploadPath);
+    }
+    foreach (var file in files)
+    {
+        var filePath = Path.Combine(uploadPath, file.FileName);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+    }
+    return Results.Ok("File saved successfully.");
+})
+.DisableAntiforgery();
 
 app.Run();
